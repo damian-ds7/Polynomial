@@ -189,3 +189,8 @@ double Polynomial::operator()(double const& x) const noexcept {
     }
     return result;
 }
+
+std::ostream& operator<<(std::ostream& os, Polynomial const& polynomial) {
+    os << polynomial.toString();
+    return os;
+}

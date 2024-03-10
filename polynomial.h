@@ -31,4 +31,6 @@ public:
     bool operator==(Polynomial const& other) const noexcept;
     bool operator!=(Polynomial const& other) const noexcept;
     double operator()(double const& x) const noexcept;
+
+    friend std::ostream& operator<<(std::ostream& os, Polynomial const& polynomial);
 };
