@@ -7,4 +7,5 @@ include_directories(.)
 
 add_executable(polynomial
         polynomial.cpp
-        polynomial.h)
+        polynomial.h
+        main.cpp)
