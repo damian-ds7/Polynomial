@@ -12,8 +12,8 @@ void Polynomial::sortTerms() noexcept {
     std::sort(terms.begin(), terms.end(), sortByDegree);
 }
 
-void Polynomial::applyOperation(Polynomial const& other, char operation) noexcept {
-    auto otherTerms = other.terms;
+void Polynomial::applyOperation(std::vector<std::pair<double, int>> const& otherTerms,
+                                char operation) noexcept {
     for (auto otherTerm : otherTerms) {
         if (operation == '-') {
             otherTerm.first *= -1;
@@ -81,6 +81,12 @@ Polynomial::Polynomial(std::string const& polynomial) {
     this->degree = terms[0].second;
 }
 
+void Polynomial::setTerms(const std::vector<std::pair<double, int>> &terms) noexcept {
+    this->terms = terms;
+    sortTerms();
+    degree = terms[0].second;
+}
+
 int Polynomial::getDegree() const noexcept {
     return degree;
 }
@@ -110,13 +116,24 @@ std::string Polynomial::toString() const noexcept {
 }
 
 void Polynomial::operator+=(Polynomial const& other) noexcept {
-    applyOperation(other, '+');
+    applyOperation(other.terms, '+');
     degree = terms[0].second;
 }
 
 void Polynomial::operator-=(Polynomial const& other) noexcept {
-    applyOperation(other, '-');
+    applyOperation(other.terms, '-');
     degree = terms[0].second;
+}
+
+void Polynomial::operator*=(Polynomial const& other) noexcept {
+    auto termsCopy = std::move(terms);
+    for (auto& otherTerm : other.terms) {
+        std::vector<std::pair<double, int>> tempTerms;
+        for (auto& term : termsCopy) {
+            tempTerms.emplace_back(term.first * otherTerm.first, term.second + otherTerm.second);
+            applyOperation(tempTerms, '+');
+        }
+    }
 }
 
 void Polynomial::operator*=(double const& scalar) noexcept {
@@ -134,6 +151,12 @@ Polynomial Polynomial::operator+(Polynomial const& other) const noexcept {
 Polynomial Polynomial::operator-(Polynomial const& other) const noexcept {
     Polynomial res(*this);
     res -= other;
+    return res;
+}
+
+Polynomial Polynomial::operator*(Polynomial const& other) const noexcept {
+    Polynomial res(*this);
+    res *= other;
     return res;
 }
 
