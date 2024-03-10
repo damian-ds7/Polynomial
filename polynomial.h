@@ -10,14 +10,16 @@ private:
     static bool sortByDegree(std::pair<double, int> const& a, std::pair<double, int> const& b) noexcept;
     void sortTerms() noexcept;
     void applyOperation(std::vector<std::pair<double, int>> const& otherTerms, char operation) noexcept;
+    void processTerm(std::string const& term, bool const& isNegative) noexcept;
+    void formatDouble(std::string& number) const noexcept;
 public:
     Polynomial() = default;
     explicit Polynomial(std::vector<std::pair<double, int>> const& terms);
     explicit Polynomial(std::string const& polynomial);
     Polynomial(Polynomial const& other) = default;
     ~Polynomial() = default;
-    std::string toString() const noexcept;
-    int getDegree() const noexcept;
+    [[nodiscard]] std::string toString() const noexcept;
+    [[nodiscard]] int getDegree() const noexcept;
     void setTerms(std::vector<std::pair<double, int>> const& terms) noexcept;
     void operator+=(Polynomial const& other) noexcept;
     void operator-=(Polynomial const& other) noexcept;

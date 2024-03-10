@@ -1,7 +1,6 @@
 #include "polynomial.h"
 #include <iostream>
 #include <algorithm>
-#include <sstream>
 #include <cmath>
 
 bool Polynomial::sortByDegree(std::pair<double, int> const& a, std::pair<double, int> const& b) noexcept {
@@ -42,43 +41,91 @@ Polynomial::Polynomial(std::vector<std::pair<double, int>> const& terms) {
     degree = terms[0].second;
 }
 
+//Polynomial::Polynomial(std::string const& polynomial) {
+//    std::istringstream iss(polynomial);
+//    std::string term;
+//    while (std::getline(iss, term, '+')) {
+//        term.erase(std::remove_if(term.begin(), term.end(), ::isspace), term.end());
+//        double coefficient = 1.0;
+//        int exponent = 0;
+//        bool isNegative = false;
+//        if (term[0] == '-') {
+//            isNegative = true;
+//            term = term.substr(1);
+//        }
+//
+//        size_t pos = term.find('x');
+//
+//        if (pos != std::string::npos) {
+//            if (pos != 0) {
+//                coefficient = std::stod(term.substr(0, pos));
+//            }
+//            pos = term.find('^');
+//            if (pos != std::string::npos) {
+//                exponent = std::stod(term.substr(pos + 1));
+//            } else {
+//                exponent = 1;
+//            }
+//        } else {
+//            coefficient = std::stod(term);
+//        }
+//
+//        if (isNegative) {
+//            coefficient *= -1;
+//        }
+//
+//        terms.emplace_back(coefficient, exponent);
+//    }
+//    sortTerms();
+//    this->degree = terms[0].second;
+//}
+
 Polynomial::Polynomial(std::string const& polynomial) {
-    std::istringstream iss(polynomial);
     std::string term;
-    while (std::getline(iss, term, '+')) {
-        term.erase(std::remove_if(term.begin(), term.end(), ::isspace), term.end());
-        double coefficient = 1.0;
-        int exponent = 0;
-        bool isNegative = false;
-        if (term[0] == '-') {
-            isNegative = true;
-            term = term.substr(1);
-        }
-
-        size_t pos = term.find('x');
-
-        if (pos != std::string::npos) {
-            if (pos != 0) {
-                coefficient = std::stod(term.substr(0, pos));
+    bool isNegative = false;
+    for (char c : polynomial) {
+        if (c == '+' || c == '-') {
+            if (!term.empty()) {
+                processTerm(term, isNegative);
+                term.clear();
             }
-            pos = term.find('^');
-            if (pos != std::string::npos) {
-                exponent = std::stoi(term.substr(pos + 1));
-            } else {
-                exponent = 1;
-            }
+            isNegative = (c == '-');
         } else {
-            coefficient = std::stod(term);
+            term += c;
         }
-
-        if (isNegative) {
-            coefficient *= -1;
-        }
-
-        terms.emplace_back(coefficient, exponent);
+    }
+    if (!term.empty()) {
+        processTerm(term, isNegative);
     }
     sortTerms();
-    this->degree = terms[0].second;
+    degree = terms[0].second;
+}
+
+void Polynomial::processTerm(std::string const& term, bool const& isNegative) noexcept {
+    double coefficient = 1.0;
+    int exponent = 0;
+
+    size_t pos = term.find('x');
+
+    if (pos != std::string::npos) {
+        if (pos != 0) {
+            coefficient = std::stod(term.substr(0, pos));
+        }
+        pos = term.find('^');
+        if (pos != std::string::npos) {
+            exponent = std::stoi(term.substr(pos + 1));
+        } else {
+            exponent = 1;
+        }
+    } else {
+        coefficient = std::stod(term);
+    }
+
+    if (isNegative) {
+        coefficient *= -1;
+    }
+
+    terms.emplace_back(coefficient, exponent);
 }
 
 void Polynomial::setTerms(const std::vector<std::pair<double, int>> &terms) noexcept {
@@ -91,6 +138,12 @@ int Polynomial::getDegree() const noexcept {
     return degree;
 }
 
+void Polynomial::formatDouble(std::string& number) const noexcept {
+    size_t dot_pos = number.find('.');
+    if (dot_pos != std::string::npos) {
+        number.erase(number.find_last_not_of('0') + 1);}
+}
+
 std::string Polynomial::toString() const noexcept {
     std::string result;
     for (auto const& term : terms) {
@@ -99,18 +152,45 @@ std::string Polynomial::toString() const noexcept {
         }
         if (term.first > 0) {
             if (!result.empty()) {
-                result += "+";
+                result += "+ ";
             }
         } else {
-            result += "-";
+            if (result.empty()) {
+                result += "-";
+            } else {
+                result += "- ";
+            }
         }
-        if (term.second == 0) {
-            result += std::to_string(term.first);
-        } else if (term.second == 1) {
-            result += std::to_string(term.first) + "x";
+
+        double termToAdd = std::abs(term.first);
+        int termToAddInt = static_cast<int>(termToAdd);
+
+        if (termToAdd == termToAddInt) {
+            termToAdd = 0;
+        }
+
+        std::string strTerm;
+
+        if ((termToAdd == 1 || termToAddInt == 1) && term.second != 0) {
+            strTerm = "";
         } else {
-            result += std::to_string(term.first) + "x^" + std::to_string(term.second);
+            if (termToAdd == 0) {
+                strTerm = std::to_string(termToAddInt);
+            } else {
+                strTerm = std::to_string(termToAdd);
+                formatDouble(strTerm);
+            }
         }
+
+
+        if (term.second == 0) {
+            result += strTerm;
+        } else if (term.second == 1) {
+            result += strTerm + "x";
+        } else {
+            result += strTerm + "x^" + std::to_string(term.second);
+        }
+        result += " ";
     }
     return result;
 }
